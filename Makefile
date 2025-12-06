@@ -18,7 +18,6 @@ help:
 # Install dependencies
 install:
 	mise install
-	uv sync --extra dev
 
 # Sync dependencies from lock file (faster, uses existing lock)
 sync:
