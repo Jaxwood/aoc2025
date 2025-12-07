@@ -9,11 +9,23 @@ def test_part1a(read_input):
     actual = part1(data)
     assert actual == expected
 
+
 def test_part1(read_input):
     data = read_input("data/day01.txt")
     expected = 1048
     actual = part1(data)
     assert actual == expected
 
+
+def test_part2a(read_input):
+    data = read_input("data/day01_part1.txt")
+    expected = 6
+    actual = part2(data)
+    assert actual == expected
+
+
 def test_part2(read_input):
-    pass
+    data = read_input("data/day01.txt")
+    expected = 6498
+    actual = part2(data)
+    assert actual == expected

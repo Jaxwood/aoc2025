@@ -3,22 +3,46 @@
 from typing import List, NamedTuple
 from enum import Enum
 
+
 class Direction(Enum):
     LEFT = 1
     RIGHT = 2
+
 
 class Rotation(NamedTuple):
     direction: Direction
     times: int
 
-class Dial():
+
+class Dial:
     def __init__(self, start_position: int = 50, max_position: int = 99):
         self.position = start_position
         self.MAX_POSITION = max_position
         self.zero_based_position = 0
+        self.crosses = 0
 
     def rotate(self, rotation: Rotation):
-        # make sure rotation times is within bounds
+        steps = rotation.times
+
+        if steps == 0:
+            return
+
+        total_positions = self.MAX_POSITION + 1
+
+        complete_circles = steps // total_positions
+        remaining_steps = steps % total_positions
+        crossings = complete_circles
+
+        if remaining_steps > 0:
+            if rotation.direction == Direction.LEFT:
+                if self.position > 0 and remaining_steps >= self.position:
+                    crossings += 1
+            else:
+                if (self.position + remaining_steps) >= total_positions:
+                    crossings += 1
+
+        self.crosses += crossings
+
         times = rotation.times % (self.MAX_POSITION + 1)
         if rotation.direction == Direction.LEFT:
             self.position -= times
@@ -40,18 +64,23 @@ class Dial():
     def zero_based_positions(self) -> int:
         return self.zero_based_position
 
+    def crosses_at_zero(self) -> int:
+        return self.crosses
+
+
 def _parse_input(data: List[str]) -> List[Rotation]:
     rotations = []
     for line in data:
         direction, times = line[0], int(line[1:])
-        if direction == 'L':
+        if direction == "L":
             rotations.append(Rotation(Direction.LEFT, times))
-        elif direction == 'R':
+        elif direction == "R":
             rotations.append(Rotation(Direction.RIGHT, times))
         else:
             raise ValueError(f"Invalid direction: {direction}")
 
     return rotations
+
 
 def part1(data: List[str]) -> int:
     dial = Dial(50, 99)
@@ -63,4 +92,9 @@ def part1(data: List[str]) -> int:
 
 
 def part2(data):
-    pass
+    dial = Dial(50, 99)
+    rotations = _parse_input(data)
+    for rotation in rotations:
+        dial.rotate(rotation)
+
+    return dial.crosses_at_zero()
