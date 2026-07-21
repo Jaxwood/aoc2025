@@ -35,4 +35,19 @@ def part1(data: List[str]) -> int:
 
 
 def part2(data: List[str]) -> int:
-    return 0
+    ranges, _ = _parse_database(data)
+    if not ranges:
+        return 0
+
+    normalized = [(min(start, end), max(start, end)) for start, end in ranges]
+    normalized.sort()
+
+    merged: List[Tuple[int, int]] = []
+    for start, end in normalized:
+        if not merged or start > merged[-1][1] + 1:
+            merged.append((start, end))
+        else:
+            merged_start, merged_end = merged[-1]
+            merged[-1] = (merged_start, max(merged_end, end))
+
+    return sum(end - start + 1 for start, end in merged)
