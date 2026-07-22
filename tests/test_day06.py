@@ -5,14 +5,14 @@ from aoc2025.day06 import part1, part2
 
 def test_part1a(read_input):
     data = read_input("data/day06_part1.txt")
-    expected = 0
+    expected = 4277556
     actual = part1(data)
     assert actual == expected
 
 
 def test_part1(read_input):
     data = read_input("data/day06.txt")
-    expected = 0
+    expected = 6100348226985
     actual = part1(data)
     assert actual == expected
 
