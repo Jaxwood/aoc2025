@@ -14,11 +14,11 @@ class UnionFind:
             self.parent[x] = self.find(self.parent[x])
         return self.parent[x]
 
-    def union(self, a: int, b: int) -> None:
+    def union(self, a: int, b: int) -> bool:
         root_a = self.find(a)
         root_b = self.find(b)
         if root_a == root_b:
-            return
+            return False
 
         if self.rank[root_a] < self.rank[root_b]:
             self.parent[root_a] = root_b
@@ -27,6 +27,8 @@ class UnionFind:
         else:
             self.parent[root_b] = root_a
             self.rank[root_a] += 1
+
+        return True
 
 
 def _parse_points(data: List[str]) -> List[Tuple[int, int, int]]:
@@ -74,4 +76,25 @@ def part1(data: List[str]) -> int:
 
 
 def part2(data: List[str]) -> int:
+    points = _parse_points(data)
+    n = len(points)
+    if n < 2:
+        return 0
+
+    edges = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            edges.append((_distance_squared(points[i], points[j]), i, j))
+
+    edges.sort(key=lambda edge: edge[0])
+
+    uf = UnionFind(n)
+    components = n
+
+    for _, i, j in edges:
+        if uf.union(i, j):
+            components -= 1
+            if components == 1:
+                return points[i][0] * points[j][0]
+
     return 0
