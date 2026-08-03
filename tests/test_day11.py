@@ -17,15 +17,29 @@ def test_part1(read_input):
     assert actual == expected
 
 
-def test_part2a(read_input):
-    data = read_input("data/day11_part1.txt")
-    expected = 0
+def test_part2a():
+    data = [
+        "svr: aaa bbb",
+        "aaa: fft",
+        "fft: ccc",
+        "bbb: tty",
+        "tty: ccc",
+        "ccc: ddd eee",
+        "ddd: hub",
+        "hub: fff",
+        "eee: dac",
+        "dac: fff",
+        "fff: ggg hhh",
+        "ggg: out",
+        "hhh: out",
+    ]
+    expected = 2
     actual = part2(data)
     assert actual == expected
 
 
 def test_part2(read_input):
     data = read_input("data/day11.txt")
-    expected = 0
+    expected = 362956369749210
     actual = part2(data)
     assert actual == expected
