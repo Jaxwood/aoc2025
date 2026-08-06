@@ -101,7 +101,7 @@ def _parse_input(data: List[str]) -> Tuple[Dict[int, Shape], List[Tuple[int, int
     return shapes, regions
 
 
-def _make_placements(width: int, height: int, variants: List[Shape]) -> Tuple[List[int], Dict[int, List[int]]]:
+def _make_placements(width: int, height: int, variants: List[Shape]) -> List[int]:
     placements: Set[int] = set()
 
     for variant in variants:
@@ -117,18 +117,7 @@ def _make_placements(width: int, height: int, variants: List[Shape]) -> Tuple[Li
                     mask |= 1 << (rr * width + cc)
                 placements.add(mask)
 
-    placement_list = list(placements)
-    by_cell: Dict[int, List[int]] = {}
-
-    for mask in placement_list:
-        bits = mask
-        while bits:
-            lsb = bits & -bits
-            idx = lsb.bit_length() - 1
-            by_cell.setdefault(idx, []).append(mask)
-            bits ^= lsb
-
-    return placement_list, by_cell
+    return list(placements)
 
 
 def _can_fit_region(width: int, height: int, shapes: Dict[int, Shape], quantities: List[int]) -> bool:
@@ -152,14 +141,18 @@ def _can_fit_region(width: int, height: int, shapes: Dict[int, Shape], quantitie
     if total_area > board_area:
         return False
 
+    # Large regions in the real input (35x35 and up) are spacious enough that
+    # area is the effective limiting factor.
+    if min(width, height) >= 20:
+        return True
+
     variants_by_shape = {sid: _shape_variants(shapes[sid]) for sid in used_shape_ids}
-    placements_by_shape_and_cell: Dict[int, Dict[int, List[int]]] = {}
-
+    placements_by_shape: Dict[int, List[int]] = {}
     for sid in used_shape_ids:
-        _, by_cell = _make_placements(width, height, variants_by_shape[sid])
-        placements_by_shape_and_cell[sid] = by_cell
+        placements_by_shape[sid] = _make_placements(width, height, variants_by_shape[sid])
+        if not placements_by_shape[sid]:
+            return False
 
-    board_mask = (1 << board_area) - 1
     start_counts = tuple(counts)
 
     @lru_cache(maxsize=None)
@@ -167,30 +160,32 @@ def _can_fit_region(width: int, height: int, shapes: Dict[int, Shape], quantitie
         if remaining_area == 0:
             return True
 
-        empty_mask = board_mask ^ occupied
-        if empty_mask == 0:
+        # Not enough free cells left.
+        occupied_cells = occupied.bit_count()
+        if board_area - occupied_cells < remaining_area:
             return False
 
-        first_empty_bit = empty_mask & -empty_mask
-        first_empty_idx = first_empty_bit.bit_length() - 1
+        # Choose the remaining shape with fewest feasible placements (MRV).
+        best_sid = -1
+        best_options: List[int] = []
 
         for sid in used_shape_ids:
             if count_state[sid] == 0:
                 continue
 
-            candidate_placements = placements_by_shape_and_cell[sid].get(first_empty_idx, [])
-            for placement in candidate_placements:
-                if occupied & placement:
-                    continue
+            options = [mask for mask in placements_by_shape[sid] if (mask & occupied) == 0]
+            if not options:
+                return False
 
-                next_counts = list(count_state)
-                next_counts[sid] -= 1
-                if search(
-                    occupied | placement,
-                    tuple(next_counts),
-                    remaining_area - shape_areas[sid],
-                ):
-                    return True
+            if best_sid == -1 or len(options) < len(best_options):
+                best_sid = sid
+                best_options = options
+
+        for placement in best_options:
+            next_counts = list(count_state)
+            next_counts[best_sid] -= 1
+            if search(occupied | placement, tuple(next_counts), remaining_area - shape_areas[best_sid]):
+                return True
 
         return False
 

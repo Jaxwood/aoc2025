@@ -12,7 +12,7 @@ def test_part1a(read_input):
 
 def test_part1(read_input):
     data = read_input("data/day12.txt")
-    expected = 0
+    expected = 495
     actual = part1(data)
     assert actual == expected
 
