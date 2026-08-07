@@ -2,6 +2,8 @@
 
 My solutions for [Advent of Code 2025](https://adventofcode.com/2025), implemented in Python.
 
+![Advent of Code 2025](aoc.png)
+
 ## Prerequisites
 
 - [mise](https://mise.jdx.dev/) (manages Python and uv versions)
